@@ -1,0 +1,52 @@
+#!/bin/bash
+
+scripts=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P ) 
+
+dataset=$(dirname "$scripts")
+
+sleep 0.5s
+python3 $scripts/openDocker.py
+
+
+# open headless chrome in another terminal
+open -a Terminal.app $dataset/scripts/run_chrome
+
+sleep 0.5s
+	
+# open tcpdump in another terminal to inspect the captured packets
+open -a Terminal.app $dataset/scripts/run_tcpdump
+
+sleep 3s
+
+cd $dataset
+python3 scripts/openWebsites.py -f websites.txt
+
+
+docker stop tcpdump
+docker stop chrome
+
+mv $dataset/sslkeylogfile.txt  $dataset/tcpdump.pcap $dataset/captured/$directory
+
+cd $dataset/captured/$directory
+
+tshark -r tcpdump.pcap -T json > output.json -o tls.keylog_file:$dataset/captured/$directory/sslkeylogfile.txt --no-duplicate-keys 
+
+sleep 2s 
+
+cd $dataset/scripts 
+
+#python3 label_easyprivacy.py
+
+#sleep 4s
+
+#python3 statistics.py
+
+python3 label_ublock.py
+
+
+
+
+
+
+
+

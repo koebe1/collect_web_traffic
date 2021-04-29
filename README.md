@@ -1,4 +1,4 @@
-# getData
+# collect_web_traffic
 
 master thesis project to collect network traffic
 
@@ -30,4 +30,3 @@ pip install argparse
 pip install pyperclip
 pip install yaml
 pip install psutil
-# collect_web_traffic

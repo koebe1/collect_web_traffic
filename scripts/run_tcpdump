@@ -1,0 +1,21 @@
+#!/bin/bash
+scripts=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P ) 
+
+dataset=$(dirname "$scripts")
+
+
+docker run --rm --name tcpdump --net=container:chrome -v $dataset:/tcpdump kaazing/tcpdump not host 127.0.0.1 and not host 172.17.0.1 -v -i any -w  tcpdump/tcpdump.pcap
+
+
+
+
+
+
+
+
+
+
+
+
+
+

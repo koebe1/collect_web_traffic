@@ -1,0 +1,13 @@
+# CONFIGURATIONS for the get_data programm
+
+# Specify time (in seconds) between website calls
+num: 5
+
+# Specify the path to your chrome-user-data-directory
+chrome_profile: "user-data-dir=/Users/bene/Library/Application Support/Google/Chrome/Default/Default"
+
+# Specify path to your docker desktop application
+docker_path: "/Applications/Docker.app"
+
+# Specify the time (in seconds) to wait for docker desktop to startup
+sec: 30

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# get path of the files directory -> dataset
+dataset=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+
+# get user input for the folder name
+read -p "
+Specify a directory $dataset/captured/['Your_Directory']:
+-> " directory
+export directory
+
+mkdir -p $dataset/captured/$directory
+
+# extract uBlock log
+python $dataset/scripts/openWebsites_uBlock.py -f $dataset/websites.txt

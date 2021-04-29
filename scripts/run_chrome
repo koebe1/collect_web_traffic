@@ -1,0 +1,22 @@
+#!/bin/bash
+scripts=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P ) 
+
+dataset=$(dirname "$scripts")
+
+
+docker run --rm -it --name chrome -p 4444:4444 -v "$dataset":/ssl -e SSLKEYLOGFILE=ssl/sslkeylogfile.txt retreatguru/headless-chromedriver
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
