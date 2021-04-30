@@ -4,7 +4,7 @@ import json
 import re
 
 # relative path to the uBlock log
-ublock_log_file = "/Users/bene/Desktop/dataset/captured/sueddeutsche/uBlockLog.txt"
+ublock_log_file = "/Users/bene/Desktop/dataset/captured/top5/uBlockLog.txt"
 
 
 # extracts url from uBlockLog.txt and writes urls to blocked_URLs_uBlock.txt
@@ -36,6 +36,7 @@ def extract_urls_with_options():
         xmlhttprequest = False
         image = False
         script = False
+        ping = False
 
         # uBlock uses some custom rules -> check for custom rules and change them to adblock format
         if '3p' in rule:
@@ -48,10 +49,13 @@ def extract_urls_with_options():
         if "script" in rule:
             script = True
 
+        if "ping" in rule:
+            ping = True
+
         if "xmlhttprequest" in rule:
             xmlhttprequest = True
 
-        if "$stylesheet" in rule:
+        if "stylesheet" in rule:
             stylesheet = True
 
         if "domain=" in rule:
@@ -72,7 +76,8 @@ def extract_urls_with_options():
                 "image": image,
                 "script": script,
                 "xmlhttprequest": xmlhttprequest,
-                "stylesheet": stylesheet
+                "stylesheet": stylesheet,
+                "ping": ping
             }
         }
 
@@ -90,7 +95,7 @@ def extract_urls_with_options():
 ublock_log_list = extract_urls_with_options()
 
 
-output = "/Users/bene/Desktop/dataset/captured/sueddeutsche/output.json"
+output = "/Users/bene/Desktop/dataset/captured/top5/output.json"
 
 
 def label():
