@@ -5782,7 +5782,7 @@ _sdcTrackingCode.
 ! google tracking
 /client_204?$image,other,ping,script
 /csi_204?$image,other,ping,script
-/gen_204?$image,other,ping,script
+/gen_204?$image
 /generate_204$image,other,ping,script
 ! Adblock tracking
 ,adb=*&referer=

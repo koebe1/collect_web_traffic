@@ -1,11 +1,10 @@
 from urllib.parse import urlparse
 from adblockparser import AdblockRules
 import json
-import pprint
-
+import re
 
 # relative path to the uBlock log
-ublock_log_file = "/Users/bene/Desktop/dataset/captured/bild.de/uBlockLog.txt"
+ublock_log_file = "/Users/bene/Desktop/dataset/captured/sueddeutsche/uBlockLog.txt"
 
 
 # extracts url from uBlockLog.txt and writes urls to blocked_URLs_uBlock.txt
@@ -28,30 +27,60 @@ def extract_urls_with_options():
         # strip url https://example.com/home?width=10 to example.com
         stripped_url = urlparse(content[index+4]).netloc
 
-        # get option parameter for adblockparser from each blocked element
-        domain = content[index+1]
-        temp = content[index+3]
-        third_party = ""
+        rule = content[index-1]
 
-        if temp == "xhr":
-            temp = "xmlhttprequest"
-        if content[index+2] == "3":
+        # get option parameter for adblockparser from each blocked element
+        domain = ""
+        third_party = False
+        stylesheet = False
+        xmlhttprequest = False
+        image = False
+        script = False
+
+        # uBlock uses some custom rules -> check for custom rules and change them to adblock format
+        if '3p' in rule:
+            rule = rule.replace("3p", "third-party")
             third_party = True
-        elif content[index+2] == "1":
-            third_party = False
-        elif content[index+2] == "3,1":
-            third_party = True
+
+        if "image" in rule:
+            image = True
+
+        if "script" in rule:
+            script = True
+
+        if "xmlhttprequest" in rule:
+            xmlhttprequest = True
+
+        if "$stylesheet" in rule:
+            stylesheet = True
+
+        if "domain=" in rule:
+
+            if "domain=~" not in rule:
+                # extract domain content
+                domain = rule.partition("domain=")[2]
+                if "," in domain:
+                    domain = domain.partition(",")[0]
 
         # build log dict with options
         obj = {
             "stripped_url": stripped_url,
+            "rule": rule,
             "options": {
                 "domain": domain,
                 "third-party": third_party,
-                temp: True
+                "image": image,
+                "script": script,
+                "xmlhttprequest": xmlhttprequest,
+                "stylesheet": stylesheet
             }
-
         }
+
+        # check options -> if False delete options || .copy() to dont change the iterated object while iterating
+        for option in obj["options"].copy():
+            if not obj["options"][option]:
+                del obj["options"][option]
+
         # push it to the ublock_log list
         ublock_log_list.append(obj)
 
@@ -61,13 +90,19 @@ def extract_urls_with_options():
 ublock_log_list = extract_urls_with_options()
 
 
-output = "/Users/bene/Desktop/dataset/captured/bild.de/output.json"
+output = "/Users/bene/Desktop/dataset/captured/sueddeutsche/output.json"
 
 
 def label():
-    # use easyprivacy to check rules contained by that list against urls
-    with open("/Users/bene/Desktop/dataset/dependencies/easyprivacy.txt", "rb") as f:
-        raw_rules = f.read().decode("utf8").splitlines()
+    # # use easyprivacy to check rules contained by that list against urls
+    # with open("/Users/bene/Desktop/dataset/dependencies/easyprivacy.txt", "rb") as f:
+    #     raw_rules = f.read().decode("utf8").splitlines()
+    #
+    raw_rules = []
+
+    # use rules from uBlockLog for big performance upgrade -> used rules should be exactly the same
+    for entry in ublock_log_list:
+        raw_rules.append(entry["rule"])
 
     rules = AdblockRules(raw_rules)
     options = {}
@@ -116,22 +151,37 @@ def label():
                             if(rules.should_block(http_request_full_uri, options)):
                                 packet["tracker"] = "true"
 
-                # CHECK RESPONSE URI AND DATA_FILE?
+                # # CHECK RESPONSE URI AND DATA_FILE?
                 # elif "http.response_for.uri" in http:
                 #     http_response_for_uri = packet["_source"]["layers"]["http"]["http.response_for.uri"]
 
-                #     for url in stripped_urls:
-                #         if url in http_response_for_uri:
+                #     # loop through new created ublock_log_list
+                #     for blocked_element in ublock_log_list:
+                #         # check if stripped_url is in http_response_for_uri
+                #         if blocked_element["stripped_url"] in http_response_for_uri:
 
-                #             packet["tracker"] = "true"
+                #            # set options according to blocked_element in ublock_log_list
+                #             options = blocked_element["options"]
+
+                #             # check if url in http_request.full_uri should be blocked according to adblockparser
+                #             if(rules.should_block(http_response_for_uri, options)):
+                #                 packet["tracker"] = "true"
 
                 # elif "http.file_data" in http:
                 #     http_file_data = packet["_source"]["layers"]["http"]["http.file_data"]
 
-                #     for url in stripped_urls:
-                #         if url in http_file_data:
+                #     for blocked_element in ublock_log_list:
+                #         # check if stripped_url is in http_response_for_uri
+                #         if blocked_element["stripped_url"] in http_file_data:
 
-                #             packet["tracker"] = "true"
+                #             # set options according to blocked_element in ublock_log_list
+                #             options = blocked_element["options"]
+
+                #             # check if url in http_request.full_uri should be blocked according to adblockparser
+
+                #             # NEED TO EXTRACT URL FROM http_file_data FIRST
+                #             if(rules.should_block(HTTP-FILE-DATA, options)):
+                #                 packet["tracker"] = "true"
 
         json_file.seek(0)
         # write to file
@@ -159,6 +209,9 @@ label()
 #         json_file.seek(0)
 #         # write to file
 #         json.dump(data, json_file, indent=4)
+
+
+# delete_video_content()
 
 
 # def extractUrlUblock():
